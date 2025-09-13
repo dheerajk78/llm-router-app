@@ -1,8 +1,11 @@
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export async function fetchModels() {
-  const response = await fetch(`${baseUrl}/models`);
-  if (!response.ok) throw new Error("Failed to fetch models");
-  return response.json();
+  const response = await fetch(`${BACKEND_URL}/api/models`);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return await response.json();
 }
+
 
