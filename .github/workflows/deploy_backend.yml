@@ -11,7 +11,7 @@ jobs:
 
     env:
       PROJECT_ID: affable-grin-282703
-      REGION: australiaeast1
+      REGION: australia-southeast1
       SERVICE_NAME: llm-backend
       DOCKERHUB_REPO: kdheeraj/llm-backend
 
