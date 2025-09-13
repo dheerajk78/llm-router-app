@@ -1,4 +1,4 @@
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
 console.log("Backend URL:", BACKEND_URL); // <--- Add this line
 
 export async function fetchModels() {
