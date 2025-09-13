@@ -1,8 +1,8 @@
-name: Deploy Backend to Cloud Run
+name: Deploy Backend to Cloud Run (via Docker Hub)
 
 on:
   push:
-    branches: [main]  # Deploy when you push to main
+    branches: [main]
 
 jobs:
   deploy:
@@ -12,12 +12,24 @@ jobs:
     env:
       PROJECT_ID: affable-grin-282703
       REGION: australiaeast1
-      REPO_NAME: llm-backend
       SERVICE_NAME: llm-backend
+      DOCKER_IMAGE: yourdockerhubusername/llm-backend  # Change this
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE }} ./backend
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ env.DOCKER_IMAGE }}
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -26,22 +38,10 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
 
-      - name: Authorize Docker for Artifact Registry
-        run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
-
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }} ./backend
-
-      - name: Push Docker image
-        run: |
-          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}
-
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }} \
+            --image docker.io/${{ env.DOCKER_IMAGE }} \
             --region ${{ env.REGION }} \
             --allow-unauthenticated \
             --platform managed \
