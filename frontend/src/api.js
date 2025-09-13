@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.VITE_APP_BACKEND_URL;
 
 export async function fetchModels() {
   const response = await fetch(`${BACKEND_URL}/api/models`);
