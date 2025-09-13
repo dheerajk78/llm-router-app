@@ -1,4 +1,4 @@
-name: Deploy Backend to Cloud Run (via Docker Hub)
+name: Deploy Backend to Cloud Run (via Docker Hub with unique tag)
 
 on:
   push:
@@ -13,23 +13,28 @@ jobs:
       PROJECT_ID: affable-grin-282703
       REGION: australiaeast1
       SERVICE_NAME: llm-backend
-      DOCKER_IMAGE: yourdockerhubusername/llm-backend  # Change this
+      DOCKERHUB_REPO: kdheeraj/llm-backend
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set unique image tag
+        run: echo "IMAGE_TAG=${{ env.DOCKERHUB_REPO }}:$(date +%s)" >> $GITHUB_ENV
+
       - name: Log in to Docker Hub
-        run: |
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE }} ./backend
-
-      - name: Push Docker image to Docker Hub
-        run: |
-          docker push ${{ env.DOCKER_IMAGE }}
+      - name: Build and push Docker image with tag ${{ env.IMAGE_TAG }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ env.IMAGE_TAG }}
+          no-cache: true
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -41,8 +46,8 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image docker.io/${{ env.DOCKER_IMAGE }} \
+            --image docker.io/${{ env.IMAGE_TAG }} \
             --region ${{ env.REGION }} \
-            --allow-unauthenticated \
             --platform managed \
+            --allow-unauthenticated \
             --service-account firestore-acc@${{ env.PROJECT_ID }}.iam.gserviceaccount.com
