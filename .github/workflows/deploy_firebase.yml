@@ -31,5 +31,6 @@ jobs:
         with: 
           firebaseServiceAccount: "${{ secrets.GCP_SA_KEY }}"
           channelId: live
+          projectId: affable-grin-282703 
         env:
           FIREBASE_TOKEN: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_AFFABLE_GRIN_282703_545D2 }}"
