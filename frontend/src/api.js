@@ -1,5 +1,5 @@
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-console.log("Backend URL:", ${BACKEND_URL}); // <--- Add this line
+console.log("Backend URL:", BACKEND_URL); // <--- Add this line
 
 export async function fetchModels() {
   const response = await fetch(`${BACKEND_URL}/api/models`);
